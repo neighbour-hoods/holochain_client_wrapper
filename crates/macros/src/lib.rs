@@ -16,6 +16,7 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
 
         let variant_fields_ident_vec: Vec<Ident> = match &variant.fields {
             Fields::Unnamed(_) => panic!("unnamed fields are not allowed"),
+            // TODO we need to handle the unit case differently - not as a map, just a unit type
             Fields::Unit => vec![],
             Fields::Named(fields_named) => fields_named.named.iter().map(|field| field.ident.clone().expect("field should have ident")).collect(),
         };
@@ -34,6 +35,11 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
                     assert!(Reflect::set(
                         &payload,
                         &(stringify!(#field_ident).into()),
+                        // TODO here we might consider adding a Trait to handle custom
+                        // converting-to-object for types we can then offer as strongly-typed
+                        // within the `AdminWsCmd` enum.
+                        //
+                        // `.into()` will only work for simple Rust types...
                         &(#field_ident.into()),
                     )?);
                 });
