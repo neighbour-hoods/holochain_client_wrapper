@@ -3,11 +3,18 @@
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
 
-#[proc_macro]
-pub fn generate_call(input: TokenStream) -> TokenStream {
+#[proc_macro_attribute]
+pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
+    let item_enum = syn::parse_macro_input!(item as syn::ItemEnum);
+    let enum_name = item_enum.ident.to_string();
+    println!("enum_name: {}", enum_name);
     (quote::quote! {
-        pub async fn call(&self, cmd: AdminWsCmd) -> Result<JsValue, JsValue> {
-            todo!()
+        #item_enum
+
+        impl AdminWebsocket {
+            pub async fn call(&self, cmd: AdminWsCmd) -> Result<JsValue, JsValue> {
+                todo!()
+            }
         }
     })
     .into()
