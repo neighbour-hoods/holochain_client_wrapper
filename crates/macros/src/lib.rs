@@ -2,7 +2,7 @@
 
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
-use syn::{Field, Fields, spanned::Spanned, punctuated::Punctuated, token::Comma};
+use syn::{punctuated::Punctuated, spanned::Spanned, token::Comma, Field, Fields};
 
 #[proc_macro_attribute]
 pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
@@ -18,7 +18,11 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
             Fields::Unnamed(_) => panic!("unnamed fields are not allowed"),
             // TODO we need to handle the unit case differently - not as a map, just a unit type
             Fields::Unit => vec![],
-            Fields::Named(fields_named) => fields_named.named.iter().map(|field| field.ident.clone().expect("field should have ident")).collect(),
+            Fields::Named(fields_named) => fields_named
+                .named
+                .iter()
+                .map(|field| field.ident.clone().expect("field should have ident"))
+                .collect(),
         };
         let variant_fields_ident_comma_punctuated: Punctuated<Ident, Comma> = {
             let mut ret = Punctuated::new();
