@@ -14,12 +14,19 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
         let variant_name = variant.ident.clone();
         let variant_name_camel_case = lowercase_first_letter(variant.ident.to_string());
 
-        let (payload_construction_tokenstream, enum_match_binder): (TokenStream2, TokenStream2) =
+        let (method_call_tokenstream, enum_match_binder): (TokenStream2, TokenStream2) =
             match &variant.fields {
                 Fields::Unnamed(_) => panic!("unnamed fields are not allowed"),
-                // TODO we need to handle the unit case differently - not as a map, just a unit type
                 Fields::Unit => {
-                    todo!()
+                    let method_call_tokenstream: TokenStream2 = quote::quote! {
+                        let promise: Promise = method.call0(&self.js_ws)?.dyn_into()?;
+                    };
+
+                    let enum_match_binder: TokenStream2 = quote::quote! {
+                        #variant_name
+                    };
+
+                    (method_call_tokenstream, enum_match_binder)
                 }
                 Fields::Named(fields_named) => {
                     let variant_fields_ident_vec: Vec<Ident> = fields_named
@@ -49,31 +56,27 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
                         field_insertion_blob
                     };
 
-                    let payload_construction_tokenstream: TokenStream2 = quote::quote! {
-                        let payload: JsValue = Object::new().dyn_into()?;
-                        assert!(Reflect::set(
-                            &payload,
-                            &JsValue::from_str("tag"),
-                            &JsValue::from_str(tag)
-                        )?);
-                        #field_insertion_blob
-                        payload
+                    let method_call_tokenstream: TokenStream2 = quote::quote! {
+                        let payload: JsValue = {
+                            let payload: JsValue = Object::new().dyn_into()?;
+                            #field_insertion_blob
+                            payload
+                        };
+                        let promise: Promise = method.call1(&self.js_ws, &payload)?.dyn_into()?;
                     };
 
                     let enum_match_binder: TokenStream2 = quote::quote! {
                         #variant_name { #variant_fields_ident_comma_punctuated }
                     };
 
-                    (payload_construction_tokenstream, enum_match_binder)
+                    (method_call_tokenstream, enum_match_binder)
                 }
             };
 
         match_blocks.extend(quote::quote_spanned! {variant.span()=>
             #enum_name::#enum_match_binder => {
-                let tag: &str = #variant_name_camel_case;
-                let method: Function = Reflect::get(&self.js_ws, &JsValue::from_str(&tag))?.dyn_into()?;
-                #payload_construction_tokenstream
-                let promise: Promise = method.call1(&self.js_ws, &payload)?.dyn_into()?;
+                let method: Function = Reflect::get(&self.js_ws, &JsValue::from_str(#variant_name_camel_case))?.dyn_into()?;
+                #method_call_tokenstream
                 let future: JsFuture = promise.into();
                 future.await
             }
