@@ -79,6 +79,7 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
                 #method_call_tokenstream
                 let future: JsFuture = promise.into();
                 future.await
+                    .map(|val| parse_admin_ws_cmd_response(val, stringify!(#variant_name).into()))
             }
         });
     }
@@ -87,7 +88,7 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
         #item_enum
 
         impl AdminWebsocket {
-            pub async fn call(&self, cmd: AdminWsCmd) -> Result<JsValue, JsValue> {
+            pub async fn call(&self, cmd: AdminWsCmd) -> Result<AdminWsCmdResponse, JsValue> {
                 match cmd {
                     #match_blocks
                 }
