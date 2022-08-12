@@ -2,10 +2,23 @@
 
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
-use syn::{punctuated::Punctuated, spanned::Spanned, token::Comma, Field, Fields};
+use syn::{parse::Parser, punctuated::Punctuated, spanned::Spanned, token::Comma, Field, Fields};
 
 #[proc_macro_attribute]
-pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
+pub fn generate_call(attrs: TokenStream, item: TokenStream) -> TokenStream {
+    let mut attrs_ident_iter = match Punctuated::<Ident, Comma>::parse_terminated.parse(attrs) {
+        Err(err) => panic!("attrs_parsed: err: {}", err),
+        Ok(x) => x.into_iter(),
+    };
+    let ident_ws = attrs_ident_iter.next().expect("ident_ws to be passed");
+    let ident_ws_cmd = attrs_ident_iter.next().expect("ident_ws_cmd to be passed");
+    let ident_ws_cmd_resp = attrs_ident_iter
+        .next()
+        .expect("ident_ws_cmd_resp to be passed");
+    let ident_parse_resp = attrs_ident_iter
+        .next()
+        .expect("ident_parse_resp to be passed");
+
     let item_enum = syn::parse_macro_input!(item as syn::ItemEnum);
     let enum_name = item_enum.ident.clone();
 
@@ -46,7 +59,7 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
                                     &(stringify!(#field_ident).into()),
                                     // TODO here we might consider adding a Trait to handle custom
                                     // converting-to-object for types we can then offer as strongly-typed
-                                    // within the `AdminWsCmd` enum.
+                                    // within the `AdminWsCmd`/`AppWsCmd` enum.
                                     //
                                     // `.into()` will only work for simple Rust types...
                                     &(#field_ident.into()),
@@ -79,7 +92,7 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
                 #method_call_tokenstream
                 let future: JsFuture = promise.into();
                 future.await
-                    .map(|val| parse_admin_ws_cmd_response(val, stringify!(#variant_name).into()))
+                    .map(|val| #ident_parse_resp(val, stringify!(#variant_name).into()))
             }
         });
     }
@@ -87,8 +100,8 @@ pub fn generate_call(_attrs: TokenStream, item: TokenStream) -> TokenStream {
     (quote::quote! {
         #item_enum
 
-        impl AdminWebsocket {
-            pub async fn call(&self, cmd: AdminWsCmd) -> Result<AdminWsCmdResponse, JsValue> {
+        impl #ident_ws {
+            pub async fn call(&self, cmd: #ident_ws_cmd) -> Result<#ident_ws_cmd_resp, JsValue> {
                 match cmd {
                     #match_blocks
                 }
