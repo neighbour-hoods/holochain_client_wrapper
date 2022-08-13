@@ -57,12 +57,7 @@ pub fn generate_call(attrs: TokenStream, item: TokenStream) -> TokenStream {
                                 assert!(Reflect::set(
                                     &payload,
                                     &(stringify!(#field_ident).into()),
-                                    // TODO here we might consider adding a Trait to handle custom
-                                    // converting-to-object for types we can then offer as strongly-typed
-                                    // within the `AdminWsCmd`/`AppWsCmd` enum.
-                                    //
-                                    // `.into()` will only work for simple Rust types...
-                                    &(#field_ident.into()),
+                                    &(#field_ident.serialize_to_js_obj()),
                                 )?);
                             });
                         }
