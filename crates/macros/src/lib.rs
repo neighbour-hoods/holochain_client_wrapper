@@ -1,8 +1,8 @@
 #![crate_type = "proc-macro"]
 
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
-use syn::{parse::Parser, punctuated::Punctuated, spanned::Spanned, token::Comma, Field, Fields};
+use proc_macro2::{Ident, TokenStream as TokenStream2};
+use syn::{parse::Parser, punctuated::Punctuated, spanned::Spanned, token::Comma, Fields};
 
 #[proc_macro_attribute]
 pub fn generate_call(attrs: TokenStream, item: TokenStream) -> TokenStream {
