@@ -1,0 +1,11 @@
+[package]
+name = "holochain_client_wrapper"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+js-sys = "0.3.59"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.32"
+
+macros = { path = "../macros" }
