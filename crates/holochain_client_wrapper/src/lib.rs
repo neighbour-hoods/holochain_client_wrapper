@@ -1,4 +1,4 @@
-use js_sys::{Array, Function, Object, Promise, Reflect};
+use js_sys::{Array, Function, JsString, Object, Promise, Reflect};
 use wasm_bindgen::{prelude::*, JsCast};
 use wasm_bindgen_futures::JsFuture;
 
@@ -34,6 +34,21 @@ pub struct HashRoleProof {
     hash: DnaHash,
     role: String,
     membrane_proof: Option<String>,
+}
+
+pub type CellIdRoleIdVec = Vec<CellIdRoleId>;
+
+#[derive(Clone, Debug)]
+pub struct AppInfo {
+    installed_app_id: String,
+    cell_data: CellIdRoleIdVec,
+    status: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct CellIdRoleId {
+    cell_id: CellId,
+    role_id: String,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +150,51 @@ impl SerializeToJsObj for HashRoleProof {
     }
 }
 
+impl SerializeToJsObj for AppInfo {
+    fn serialize_to_js_obj(self) -> JsValue {
+        let ret = move || -> Result<JsValue, JsValue> {
+            let val: JsValue = Object::new().dyn_into()?;
+            assert!(Reflect::set(
+                &val,
+                &JsValue::from_str("installed_app_id"),
+                &self.installed_app_id.serialize_to_js_obj(),
+            )?);
+            assert!(Reflect::set(
+                &val,
+                &JsValue::from_str("cell_data"),
+                &self.cell_data.serialize_to_js_obj(),
+            )?);
+            assert!(Reflect::set(
+                &val,
+                &JsValue::from_str("status"),
+                &self.status.serialize_to_js_obj(),
+            )?);
+            Ok(val)
+        };
+        ret().expect("operations to succeed")
+    }
+}
+
+impl SerializeToJsObj for CellIdRoleId {
+    fn serialize_to_js_obj(self) -> JsValue {
+        let ret = move || -> Result<JsValue, JsValue> {
+            let val: JsValue = Object::new().dyn_into()?;
+            assert!(Reflect::set(
+                &val,
+                &JsValue::from_str("cell_id"),
+                &self.cell_id.serialize_to_js_obj(),
+            )?);
+            assert!(Reflect::set(
+                &val,
+                &JsValue::from_str("role"),
+                &self.role_id.serialize_to_js_obj(),
+            )?);
+            Ok(val)
+        };
+        ret().expect("operations to succeed")
+    }
+}
+
 // TODO figure out why this doesn't work - unsatisfied trait bounds for String
 // impl<T> SerializeToJsObj for T
 // where
@@ -162,6 +222,26 @@ impl<A: DeserializeFromJsObj, B: DeserializeFromJsObj> DeserializeFromJsObj for 
     }
 }
 
+impl<T: DeserializeFromJsObj> DeserializeFromJsObj for Vec<T> {
+    fn deserialize_from_js_obj(v: JsValue) -> Self {
+        let arr: Array = v.dyn_into().expect("Array conversion to succeed");
+        let len = arr.length();
+        let mut ret = Vec::new();
+        for idx in 0..len {
+            let ele = arr.get(idx);
+            ret.push(T::deserialize_from_js_obj(ele));
+        }
+        ret
+    }
+}
+
+impl DeserializeFromJsObj for String {
+    fn deserialize_from_js_obj(v: JsValue) -> Self {
+        let js_string: JsString = v.dyn_into().expect("String conversion to succeed");
+        js_string.into()
+    }
+}
+
 impl DeserializeFromJsObj for AgentPk {
     fn deserialize_from_js_obj(v: JsValue) -> Self {
         Self(v)
@@ -171,6 +251,42 @@ impl DeserializeFromJsObj for AgentPk {
 impl DeserializeFromJsObj for DnaHash {
     fn deserialize_from_js_obj(v: JsValue) -> Self {
         Self(v)
+    }
+}
+
+impl DeserializeFromJsObj for AppInfo {
+    fn deserialize_from_js_obj(v: JsValue) -> Self {
+        let installed_app_id = String::deserialize_from_js_obj(
+            Reflect::get(&v, &JsValue::from_str("installed_app_id"))
+                .expect("object field get to succeed"),
+        );
+        let cell_data = CellIdRoleIdVec::deserialize_from_js_obj(
+            Reflect::get(&v, &JsValue::from_str("cell_data")).expect("object field get to succeed"),
+        );
+        let status = {
+            let status_obj: Object = Reflect::get(&v, &JsValue::from_str("status"))
+                .expect("object field get to succeed")
+                .dyn_into()
+                .expect("Object conversion to succeed");
+            String::deserialize_from_js_obj(Object::keys(&status_obj).get(0))
+        };
+        Self {
+            installed_app_id,
+            cell_data,
+            status,
+        }
+    }
+}
+
+impl DeserializeFromJsObj for CellIdRoleId {
+    fn deserialize_from_js_obj(v: JsValue) -> Self {
+        let cell_id = CellId::deserialize_from_js_obj(
+            Reflect::get(&v, &JsValue::from_str("cell_id")).expect("object field get to succeed"),
+        );
+        let role_id = String::deserialize_from_js_obj(
+            Reflect::get(&v, &JsValue::from_str("role_id")).expect("object field get to succeed"),
+        );
+        Self { cell_id, role_id }
     }
 }
 
@@ -346,13 +462,13 @@ pub enum AppWsCmd {
 
 #[derive(Clone, Debug)]
 pub enum AppWsCmdResponse {
-    AppInfo(JsValue),
+    AppInfo(AppInfo),
     CallZome(JsValue),
 }
 
 fn parse_app_ws_cmd_response(val: JsValue, tag: String) -> AppWsCmdResponse {
     match tag.as_str() {
-        "AppInfo" => AppWsCmdResponse::AppInfo(val),
+        "AppInfo" => AppWsCmdResponse::AppInfo(AppInfo::deserialize_from_js_obj(val)),
         "CallZome" => AppWsCmdResponse::CallZome(val),
         other => panic!(
             "parse_app_ws_cmd_response: impossible: received unknown tag: {}",
