@@ -18,6 +18,25 @@ extern "C" {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// library data types
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Clone, Debug)]
+pub struct DnaHash(JsValue);
+
+#[derive(Clone, Debug)]
+pub struct AgentPk(JsValue);
+
+pub type CellId = (DnaHash, AgentPk);
+
+#[derive(Clone, Debug)]
+pub struct HashRoleProof {
+    hash: DnaHash,
+    role: String,
+    membrane_proof: Option<String>,
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // SerializeToJsObj trait
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,9 +91,6 @@ impl<T: SerializeToJsObj> SerializeToJsObj for Vec<T> {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct DnaHash(JsValue);
-
 impl SerializeToJsObj for DnaHash {
     fn serialize_to_js_obj(self) -> JsValue {
         let DnaHash(val) = self;
@@ -82,23 +98,11 @@ impl SerializeToJsObj for DnaHash {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct AgentPk(JsValue);
-
 impl SerializeToJsObj for AgentPk {
     fn serialize_to_js_obj(self) -> JsValue {
         let AgentPk(val) = self;
         val
     }
-}
-
-pub type CellId = (DnaHash, AgentPk);
-
-#[derive(Clone, Debug)]
-pub struct HashRoleProof {
-    hash: DnaHash,
-    role: String,
-    membrane_proof: Option<String>,
 }
 
 impl SerializeToJsObj for HashRoleProof {
