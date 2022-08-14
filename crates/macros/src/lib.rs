@@ -55,7 +55,7 @@ pub fn generate_call(attrs: TokenStream, item: TokenStream) -> TokenStream {
                         for field_ident in variant_fields_ident_vec {
                             field_insertion_blob.extend(quote::quote_spanned! {variant.span() =>
                                 assert!(Reflect::set(
-                                    &payload,
+                                    &payload_,
                                     &(stringify!(#field_ident).into()),
                                     &(#field_ident.serialize_to_js_obj()),
                                 )?);
@@ -64,13 +64,15 @@ pub fn generate_call(attrs: TokenStream, item: TokenStream) -> TokenStream {
                         field_insertion_blob
                     };
 
+                    // payload needs an underscore to disambiguate it from the `payload` field of
+                    // `AppWsCmd::CallZome`.
                     let method_call_tokenstream: TokenStream2 = quote::quote! {
-                        let payload: JsValue = {
-                            let payload: JsValue = Object::new().dyn_into()?;
+                        let payload_: JsValue = {
+                            let payload_: JsValue = Object::new().dyn_into()?;
                             #field_insertion_blob
-                            payload
+                            payload_
                         };
-                        let promise: Promise = method.call1(&self.js_ws, &payload)?.dyn_into()?;
+                        let promise: Promise = method.call1(&self.js_ws, &payload_)?.dyn_into()?;
                     };
 
                     let enum_match_binder: TokenStream2 = quote::quote! {
