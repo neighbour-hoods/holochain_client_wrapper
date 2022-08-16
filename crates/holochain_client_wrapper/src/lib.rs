@@ -444,8 +444,6 @@ pub async fn connect_app_ws(url: String, timeout: Option<u32>) -> Result<AppWebs
     }
 }
 
-/// n.b. the order of the constructors is non-alphabetical & corresponds to the order documented in
-/// <https://github.com/holochain/holochain-client-js/blob/develop/docs/API_appwebsocket.md>
 #[generate_call(AppWebsocket, AppWsCmd, AppWsCmdResponse, parse_app_ws_cmd_response)]
 #[derive(Clone, Debug)]
 pub enum AppWsCmd {
