@@ -53,11 +53,14 @@ pub struct CellIdRoleId {
     pub role_id: String,
 }
 
+#[derive(Clone, Debug)]
+pub struct EntryHashRaw(JsValue);
+
 ////////////////////////////////////////////////////////////////////////////////
 // SerializeToJsObj trait
 ////////////////////////////////////////////////////////////////////////////////
 
-trait SerializeToJsObj {
+pub trait SerializeToJsObj {
     fn serialize_to_js_obj(self) -> JsValue;
 }
 
@@ -211,7 +214,7 @@ impl SerializeToJsObj for CellIdRoleId {
 // DeserializeFromJsObj trait
 ////////////////////////////////////////////////////////////////////////////////
 
-trait DeserializeFromJsObj {
+pub trait DeserializeFromJsObj {
     fn deserialize_from_js_obj(_: JsValue) -> Self;
 }
 
@@ -289,6 +292,12 @@ impl DeserializeFromJsObj for CellIdRoleId {
             Reflect::get(&v, &JsValue::from_str("role_id")).expect("object field get to succeed"),
         );
         Self { cell_id, role_id }
+    }
+}
+
+impl DeserializeFromJsObj for EntryHashRaw {
+    fn deserialize_from_js_obj(v: JsValue) -> Self {
+        Self(v)
     }
 }
 
