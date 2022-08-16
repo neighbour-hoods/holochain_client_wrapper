@@ -33,24 +33,24 @@ pub type CellIdVec = Vec<CellId>;
 
 #[derive(Clone, Debug)]
 pub struct HashRoleProof {
-    hash: DnaHash,
-    role: String,
-    membrane_proof: Option<String>,
+    pub hash: DnaHash,
+    pub role_id: String,
+    pub membrane_proof: Option<String>,
 }
 
 pub type CellIdRoleIdVec = Vec<CellIdRoleId>;
 
 #[derive(Clone, Debug)]
 pub struct AppInfo {
-    installed_app_id: String,
-    cell_data: CellIdRoleIdVec,
-    status: String,
+    pub installed_app_id: String,
+    pub cell_data: CellIdRoleIdVec,
+    pub status: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct CellIdRoleId {
-    cell_id: CellId,
-    role_id: String,
+    pub cell_id: CellId,
+    pub role_id: String,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,8 +133,8 @@ impl SerializeToJsObj for HashRoleProof {
             )?);
             assert!(Reflect::set(
                 &val,
-                &JsValue::from_str("role"),
-                &self.role.serialize_to_js_obj(),
+                &JsValue::from_str("role_id"),
+                &self.role_id.serialize_to_js_obj(),
             )?);
             match self.membrane_proof {
                 None => {}
@@ -188,7 +188,7 @@ impl SerializeToJsObj for CellIdRoleId {
             )?);
             assert!(Reflect::set(
                 &val,
-                &JsValue::from_str("role"),
+                &JsValue::from_str("role_id"),
                 &self.role_id.serialize_to_js_obj(),
             )?);
             Ok(val)
