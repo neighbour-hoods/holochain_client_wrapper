@@ -56,6 +56,11 @@ pub struct CellIdRoleId {
 #[derive(Clone, Debug)]
 pub struct EntryHashRaw(JsValue);
 
+#[derive(Clone, Debug)]
+pub struct HeaderHashRaw(JsValue);
+
+pub type EntryHeaderHashPairRaw = (EntryHashRaw, HeaderHashRaw);
+
 ////////////////////////////////////////////////////////////////////////////////
 // SerializeToJsObj trait
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,6 +301,12 @@ impl DeserializeFromJsObj for CellIdRoleId {
 }
 
 impl DeserializeFromJsObj for EntryHashRaw {
+    fn deserialize_from_js_obj(v: JsValue) -> Self {
+        Self(v)
+    }
+}
+
+impl DeserializeFromJsObj for HeaderHashRaw {
     fn deserialize_from_js_obj(v: JsValue) -> Self {
         Self(v)
     }
