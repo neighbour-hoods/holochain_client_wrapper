@@ -29,6 +29,8 @@ pub struct AgentPk(JsValue);
 
 pub type CellId = (DnaHash, AgentPk);
 
+pub type CellIdVec = Vec<CellId>;
+
 #[derive(Clone, Debug)]
 pub struct HashRoleProof {
     hash: DnaHash,
@@ -372,7 +374,7 @@ pub enum AdminWsCmdResponse {
     InstallApp(JsValue),
     UninstallApp(JsValue),
     ListDnas(JsValue),
-    ListCellIds(CellId),
+    ListCellIds(Vec<CellId>),
     ListActiveApps(JsValue),
     // RequestAgentInfo(JsValue),
     // AddAgentInfo(JsValue),
@@ -392,7 +394,7 @@ fn parse_admin_ws_cmd_response(val: JsValue, tag: String) -> AdminWsCmdResponse 
         "InstallApp" => AdminWsCmdResponse::InstallApp(val),
         "UninstallApp" => AdminWsCmdResponse::UninstallApp(val),
         "ListDnas" => AdminWsCmdResponse::ListDnas(val),
-        "ListCellIds" => AdminWsCmdResponse::ListCellIds(CellId::deserialize_from_js_obj(val)),
+        "ListCellIds" => AdminWsCmdResponse::ListCellIds(CellIdVec::deserialize_from_js_obj(val)),
         "ListActiveApps" => AdminWsCmdResponse::ListActiveApps(val),
         // "RequestAgentInfo" => AdminWsCmdResponse::RequestAgentInfo(val),
         // "AddAgentInfo" => AdminWsCmdResponse::AddAgentInfo(val),
