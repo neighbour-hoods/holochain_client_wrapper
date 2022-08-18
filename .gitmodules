@@ -1,0 +1,3 @@
+[submodule "submodules/holochain-client-js"]
+	path = submodules/holochain-client-js
+	url = git@github.com:holochain/holochain-client-js.git
