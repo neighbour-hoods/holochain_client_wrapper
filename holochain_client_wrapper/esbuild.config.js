@@ -1,5 +1,5 @@
 require('esbuild').build({
-  entryPoints: ['./submodules/holochain-client-js/src/index.ts'],
+  entryPoints: ['../submodules/holochain-client-js/src/index.ts'],
   bundle: true,
   outfile: 'crates/holochain_client_wrapper/src/holochain_client_wrapper.js',
   format: 'esm',
