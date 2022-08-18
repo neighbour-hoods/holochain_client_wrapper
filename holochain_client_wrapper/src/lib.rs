@@ -321,6 +321,12 @@ pub struct AdminWebsocket {
     pub js_ws: JsValue,
 }
 
+impl From<JsValue> for AdminWebsocket {
+    fn from(val: JsValue) -> Self {
+        AdminWebsocket { js_ws: val }
+    }
+}
+
 impl From<AdminWebsocket> for JsValue {
     fn from(ws: AdminWebsocket) -> Self {
         ws.js_ws
@@ -449,6 +455,12 @@ fn parse_admin_ws_cmd_response(val: JsValue, tag: String) -> AdminWsCmdResponse 
 #[derive(Clone, Debug)]
 pub struct AppWebsocket {
     pub js_ws: JsValue,
+}
+
+impl From<JsValue> for AppWebsocket {
+    fn from(val: JsValue) -> Self {
+        AppWebsocket { js_ws: val }
+    }
 }
 
 impl From<AppWebsocket> for JsValue {
