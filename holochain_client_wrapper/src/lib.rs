@@ -61,6 +61,8 @@ pub struct HeaderHashRaw(JsValue);
 
 pub type EntryHeaderHashPairRaw = (EntryHashRaw, HeaderHashRaw);
 
+pub type ActiveApps = Vec<String>;
+
 ////////////////////////////////////////////////////////////////////////////////
 // SerializeToJsObj trait
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,7 +403,7 @@ pub enum AdminWsCmdResponse {
     UninstallApp(JsValue),
     ListDnas(JsValue),
     ListCellIds(Vec<CellId>),
-    ListActiveApps(JsValue),
+    ListActiveApps(ActiveApps),
     // RequestAgentInfo(JsValue),
     // AddAgentInfo(JsValue),
 }
@@ -421,7 +423,7 @@ fn parse_admin_ws_cmd_response(val: JsValue, tag: String) -> AdminWsCmdResponse 
         "UninstallApp" => AdminWsCmdResponse::UninstallApp(val),
         "ListDnas" => AdminWsCmdResponse::ListDnas(val),
         "ListCellIds" => AdminWsCmdResponse::ListCellIds(CellIdVec::deserialize_from_js_obj(val)),
-        "ListActiveApps" => AdminWsCmdResponse::ListActiveApps(val),
+        "ListActiveApps" => AdminWsCmdResponse::ListActiveApps(ActiveApps::deserialize_from_js_obj(val)),
         // "RequestAgentInfo" => AdminWsCmdResponse::RequestAgentInfo(val),
         // "AddAgentInfo" => AdminWsCmdResponse::AddAgentInfo(val),
         other => panic!(
