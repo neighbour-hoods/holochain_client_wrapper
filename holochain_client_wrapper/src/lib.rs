@@ -1,4 +1,4 @@
-use js_sys::{Array, Function, JsString, Object, Promise, Reflect};
+use js_sys::{Array, Function, JsString, Object, Promise, Reflect, Uint8Array};
 use wasm_bindgen::{prelude::*, JsCast};
 use wasm_bindgen_futures::JsFuture;
 
@@ -312,6 +312,15 @@ impl DeserializeFromJsObj for HeaderHashRaw {
     fn deserialize_from_js_obj(v: JsValue) -> Self {
         Self(v)
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// helpers
+////////////////////////////////////////////////////////////////////////////////
+
+pub fn agent_pk_to_vec_u8(AgentPk(v): AgentPk) -> Vec<u8> {
+    let arr: Uint8Array = v.dyn_into().expect("Uint8Array conversion to succeed");
+    arr.to_vec()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
