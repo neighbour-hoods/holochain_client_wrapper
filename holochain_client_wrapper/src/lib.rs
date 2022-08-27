@@ -53,7 +53,7 @@ pub struct CellIdRoleId {
     pub role_id: String,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EntryHashRaw(JsValue);
 
 #[derive(Clone, Debug)]
@@ -139,6 +139,13 @@ impl SerializeToJsObj for DnaHash {
 impl SerializeToJsObj for AgentPk {
     fn serialize_to_js_obj(self) -> JsValue {
         let AgentPk(val) = self;
+        val
+    }
+}
+
+impl SerializeToJsObj for EntryHashRaw {
+    fn serialize_to_js_obj(self) -> JsValue {
+        let Self(val) = self;
         val
     }
 }
