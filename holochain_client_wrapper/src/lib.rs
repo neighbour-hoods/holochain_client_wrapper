@@ -108,6 +108,17 @@ impl<A: SerializeToJsObj, B: SerializeToJsObj> SerializeToJsObj for (A, B) {
     }
 }
 
+impl<A: SerializeToJsObj, B: SerializeToJsObj, C: SerializeToJsObj> SerializeToJsObj for (A, B, C) {
+    fn serialize_to_js_obj(self) -> JsValue {
+        let (a, b, c) = self;
+        let val = Array::new();
+        let _ = val.push(&a.serialize_to_js_obj());
+        let _ = val.push(&b.serialize_to_js_obj());
+        let _ = val.push(&c.serialize_to_js_obj());
+        val.dyn_into().expect("Array conversion to succeed")
+    }
+}
+
 impl<T: SerializeToJsObj> SerializeToJsObj for Vec<T> {
     fn serialize_to_js_obj(self) -> JsValue {
         let val = Array::new();
