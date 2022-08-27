@@ -1,4 +1,4 @@
-use js_sys::{Array, Function, JsString, Object, Promise, Reflect, Uint8Array};
+use js_sys::{Array, Function, JsString, Number, Object, Promise, Reflect, Uint8Array};
 use wasm_bindgen::{prelude::*, JsCast};
 use wasm_bindgen_futures::JsFuture;
 
@@ -255,6 +255,13 @@ impl<T: DeserializeFromJsObj> DeserializeFromJsObj for Vec<T> {
             ret.push(T::deserialize_from_js_obj(ele));
         }
         ret
+    }
+}
+
+impl DeserializeFromJsObj for i64 {
+    fn deserialize_from_js_obj(v: JsValue) -> Self {
+        let number: Number = v.dyn_into().expect("String conversion to succeed");
+        number.value_of() as i64
     }
 }
 
